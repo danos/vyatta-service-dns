@@ -1,0 +1,18 @@
+[Unit]
+Description=dnsmasq - A lightweight caching DNS server
+
+[Service]
+Type=forking
+Environment=TERM=linux
+EnvironmentFile=/run/dns/vrf/%i/dnsmasq.env
+PIDFile=/run/dns/vrf/%i/dnsmasq.pid
+ExecStart=/usr/sbin/chvrf %i /usr/sbin/dnsmasq -x $DNSMASQ_PID_FILE -C $DNSMASQ_CONF
+
+# Test the config file and refuse starting if it is not valid.
+ExecStartPre=/usr/sbin/dnsmasq --test -C $DNSMASQ_CONF
+
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target
+

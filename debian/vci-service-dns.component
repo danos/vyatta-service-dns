@@ -1,0 +1,9 @@
+[Vyatta Component]
+Name=net.vyatta.vci.dns
+Description=VCI component for DNS
+ExecName=/lib/vci-service-dns/vci-service-dns
+ConfigFile=/etc/vci-service-dns.conf
+
+[Model net.vyatta.vci.dns.v1]
+Modules=vyatta-service-dns-v1,vyatta-service-dns-routing-instance-v1
+ModelSets=vyatta-v1

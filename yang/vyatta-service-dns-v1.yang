@@ -1,0 +1,369 @@
+module vyatta-service-dns-v1 {
+	namespace "urn:vyatta.com:mgmt:vyatta-service-dns:1";
+	prefix vyatta-service-dns-v1;
+
+	import vyatta-types-v1 {
+		prefix types;
+	}
+	import ietf-yang-types {
+		prefix ytypes;
+	}
+	import vyatta-services-v1 {
+		prefix service;
+	}
+	import vyatta-interfaces-v1 {
+		prefix if;
+	}
+	import configd-v1 {
+		prefix configd;
+	}
+	import vyatta-system-v1 {
+		prefix system;
+	}
+	import vyatta-system-network-v1 {
+		prefix sys-net;
+	}
+
+	organization "AT&T Inc.";
+	contact
+		"AT&T
+		 Postal: 208 S. Akard Street
+				 Dallas, TX 75202
+		 Web: www.att.com";
+
+	description
+		"Copyright (c) 2018-2019, AT&T Intellectual Property.
+		All rights reserved.
+
+		Copyright (c) 2014-2017 by Brocade Communications Systems, Inc.
+		All rights reserved.
+
+		Redistribution and use in source and binary forms, with or without
+		modification, are permitted provided that the following conditions
+		are met:
+
+		  1. Redistributions of source code must retain the above copyright
+		     notice, this list of conditions and the following disclaimer.
+		  2. Redistributions in binary form must reproduce the above
+		     copyright notice, this list of conditions and the following
+		     disclaimer in the documentation and/or other materials provided
+		     with the distribution.
+		  3. Neither the name of the copyright holder nor the names of its
+		     contributors may be used to endorse or promote products derived
+		     from this software without specific prior written permission.
+
+		THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+		'AS IS' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+		LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+		FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+		COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+		INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+		BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+		LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+		CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+		LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+		ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+		POSSIBILITY OF SUCH DAMAGE.
+
+		SPDX-License-Identifier: BSD-3-Clause
+
+		DNS configuration";
+
+	revision 2018-07-26 {
+		description "Implement RPCs and State for VCI conversion";
+	}
+	
+	revision 2016-08-24 {
+		description "Support IPv6 address for name-server.";
+	}
+
+	revision 2016-04-18 {
+		description "Grouping services and XPATH optimizations.";
+	}
+
+	revision 2015-08-14 {
+		description "Initial revision of version 1.";
+	}
+
+	rpc reset-dns-forwarding {
+	}
+
+	rpc reset-dns-forwarding-cache {
+	}
+
+	rpc update-dynamic-dns-interface {
+		input {
+			leaf interface {
+				mandatory true;
+				type string;
+			}
+		}
+	}
+
+	notification dns-forwarding-nameservers-updated {
+		list active-nameservers {
+			key address;
+			leaf address {
+				type types:ipv4-address;
+			}
+			leaf port {
+				type types:port;
+			}
+		}
+	}
+
+	grouping dns-service-forwarding {
+		container forwarding {
+			presence "Enable DNS forwarding";
+			description "DNS forwarding for relaying the queries";
+			configd:help "DNS forwarding";
+			leaf-list dhcp {
+				type string;
+				ordered-by "user";
+				configd:help "Use nameservers received from DHCP server for specified interface";
+				configd:allowed "/lib/vci-service-dns/list-dhcp-interfaces";
+				must "(/if:interfaces/*/*[local-name(.) = 'tagnode']"
+					+ "[. = current()]/../*[local-name(.) = 'address'][. = 'dhcp'])"
+					+ " or "
+					+ "(/if:interfaces/*/*[local-name(.) = 'vif']"
+					+ "[./../* = substring-before(current(), '.')]"
+					+ "/*[local-name(.) = 'tagnode']"
+					+ "[. = substring-after(current(), '.')]"
+					+ "/../*[local-name(.) = 'address'][. = 'dhcp'])" {
+						error-message "Interface must exist, and have DHCP address.";
+					}
+				}
+			leaf cache-size {
+				type uint32 {
+					range 0..10000;
+				}
+				default "150";
+				configd:help "DNS forwarding cache size";
+			}
+			leaf-list listen-on {
+				type string;
+				min-elements "1";
+				ordered-by "user";
+				configd:help "Interface to listen for DNS queries [REQUIRED]";
+				configd:allowed "vyatta-interfaces.pl --show=all";
+			}
+			leaf-list name-server {
+				type union {
+					type types:ipv4-address;
+					type types:ipv6-address;
+				}
+				ordered-by "user";
+				configd:help "DNS server to forward queries";
+			}
+			leaf system {
+				type empty;
+				configd:help "DNS forwarding to system nameservers";
+			}
+			list domain {
+				configd:help "DNS domain to forward to a local server";
+				key "tagnode";
+				leaf tagnode {
+					type string;
+					configd:help "DNS domain to forward to a local server";
+				}
+				leaf server {
+					type types:ipv4-address;
+					mandatory true;
+					configd:help "DNS server to forward queries";
+				}
+			}
+			container state {
+				description "Contains information about the current state of the DNS forwarding process";
+				config false;
+				leaf queries-forwarded {
+					description "The number of queries forwarded to another server";
+					type uint64;
+				}
+				leaf queries-answered {
+					description "The number of queries answered from the local cache";
+					type uint64;
+				}
+				container cache {
+					description "Information about the local cache";
+					leaf size {
+						description "The current size of the cache";
+						type uint32;
+					}
+					leaf cache-entries {
+						description "The number of entries in the cache";
+						type uint64;
+					}
+					leaf reused-cache-entries {
+						description "The number of cache entries that have been reused";
+						type uint64;
+					}
+				}
+				list nameservers {
+					description "Information about the name servers available to the system";
+					key address;
+					leaf address {
+						description "The IP address of the name server";
+						type types:ipv4-address;
+					}
+					leaf port {
+						description "The port used to communicate with the name server";
+						type types:port;
+					}
+					leaf queries-sent {
+						description "The number of queries sent to this name server";
+						type uint64;
+					}
+					leaf queries-retried-or-failed {
+						description "The number of retried or failed queries to this name server";
+						type uint64;
+					}
+					leaf provenance {
+						description "The service that the name server was derived from";
+						type enumeration {
+							enum system {
+								description "Learned from the system's resolvers";
+							}
+							enum dhcp {
+								description "Learned from a dhcp client";
+							}
+							enum ppp {
+								description "Learned from a ppp client";
+							}
+							enum configuration {
+								description "Explicitly configured in the DNS forwarding configuration";
+							}
+						}
+					}
+					leaf in-use {
+						description "Determines if the server will be used for DNS forwarding";
+						type boolean;
+					}
+					leaf domain-override-only {
+						description "Determines if this name server will only be used for a specific set of domains";
+						type boolean;
+					}
+					leaf-list domains {
+						description "The list of domains this server will be used to query";
+						type string;
+					}
+				}
+			}
+		}
+	}
+
+	grouping dns-service-dynamic {
+		container dynamic {
+			presence "Enable DNS Dynamic Sync";
+			description "DNS dynamic for syncing address change";
+			configd:help "Dynamic DNS";
+			list interface {
+				configd:help "Interface to send DDNS updates for";
+				configd:allowed "vyatta-interfaces.pl --show=all";
+				key "tagnode";
+				leaf tagnode {
+					type string;
+					configd:help "Interface to send DDNS updates for";
+					configd:allowed "vyatta-interfaces.pl --show all";
+				}
+				list service {
+					min-elements "1";
+					configd:help "Service being used for Dynamic DNS";
+					configd:allowed "/lib/vci-service-dns/dns-dynamic-op --action=list-services";
+					key "tagnode";
+					leaf tagnode {
+						type string {
+							pattern '(dnspark|dslreports|dyndns|easydns|namecheap|sitelutions|zoneedit)' {
+								error-message "
+Allowed values: dnspark dslreports dyndns easydns namecheap sitelutions zoneedit";
+							}
+						}
+						configd:help "Service being used for Dynamic DNS";
+						configd:allowed "/lib/vci-service-dns/dns-dynamic-op --action=list-services";
+					}
+					leaf password {
+						type string;
+						mandatory true;
+						configd:secret "true";
+						configd:help "Password for DDNS service";
+					}
+					leaf login {
+						type string;
+						mandatory true;
+						configd:help "Login for DDNS service";
+					}
+					leaf server {
+						type string;
+						configd:help "Server to send DDNS update to (IP address|hostname)";
+					}
+					leaf-list host-name {
+						type string;
+						min-elements "1";
+						ordered-by "user";
+						configd:help "Hostname registered with DDNS service";
+					}
+				}
+			}
+			container status {
+				config false;
+				list interfaces {
+					description "The list of interfaces in use by the dynamic DNS client";
+					key name;
+					leaf name {
+						description "The nmae of the interface";
+						type string;
+					}
+					list hosts {
+						description "The list of host names to be updated by this interface";
+						key hostname;
+						leaf hostname {
+							type string;
+						}
+						leaf address {
+							description "The last sent address for this hostname";
+							type types:ipv4-address;
+						}
+
+						leaf last-update {
+							description "The time of the last update";
+							type ytypes:date-and-time;
+						}
+						leaf status {
+							description "The status of the last update attempt";
+							type enumeration {
+								enum successful {
+									description "A change was made and it was successful";
+								}
+								enum failed {
+									description "A change was attempted and it failed";
+								}
+								enum noconnect {
+									description "A change was attempted but the process could not connect to the update service";
+								}
+								enum nochange {
+									description "No change was required";
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	augment /service:service {
+		container dns {
+			presence "Enable service DNS for default instance";
+			description "Dns service in default vrf";
+			configd:help "Domain Name Server (DNS) parameters";
+			uses dns-service-forwarding{
+				refine forwarding/system {
+					must "/system:system/sys-net:name-server" {
+						error-message
+                                                	"No name-servers set under 'system name-server";
+					}
+				}
+			}
+			uses dns-service-dynamic;
+		}
+	}
+}

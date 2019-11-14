@@ -1,0 +1,53 @@
+Source: vyatta-service-dns
+Section: contrib/net
+Priority: optional
+Maintainer: Vyatta Package Maintainers <DL-vyatta-help@att.com>
+Build-Depends:
+ cpio,
+ debhelper (>= 9),
+ dh-golang,
+ debhelper (>= 9.20160709) | dh-systemd (>= 1.5),
+ dh-vci,
+ dh-yang,
+ golang-any,
+ golang-github-danos-mgmterror-dev,
+ golang-github-danos-encoding-rfc7951-dev,
+ golang-github-danos-vci-dev,
+ golang-github-fsnotify-fsnotify-dev
+Standards-Version: 3.9.6
+
+Package: vci-service-dns
+Architecture: any
+Depends: chvrf, ddclient, dnsmasq, systemd, ${misc:Depends}, ${shlibs:Depends},
+Breaks: vyatta-cfg-system (<< 1.6.0), vyatta-op (<< 1.0)
+Replaces: vyatta-cfg-system (<< 1.6.0), vyatta-op (<< 1.0)
+Description: DNS VCI Component
+ Component to handle requests for dns forwarding and dynamic dns
+
+Package: vyatta-service-dns-v1-yang
+Architecture: all
+Depends: vci-service-dns, ${misc:Depends}, ${yang:Depends}
+Breaks: vyatta-cfg-system (<< 1.6.0)
+Replaces: vyatta-cfg-system (<< 1.6.0)
+Description: vyatta-service-dns-v1 module
+ DNS configuration
+
+Package: vyatta-service-dns-routing-instance-v1-yang
+Architecture: all
+Depends: vci-service-dns, ${misc:Depends}, ${yang:Depends}
+Conflicts: vyatta-service-dns (<< 0.2)
+Replaces: vyatta-service-dns (<< 0.2)
+Description: vyatta-service-dns-routing-instance-v1 module
+ The YANG module for vyatta-service-dns-routing-instance-v1
+
+Package: vyatta-op-service-dns-v1-yang
+Architecture: all
+Depends: vci-service-dns, ${misc:Depends}, ${yang:Depends}
+Description: vyatta-op-service-dns-v1 module
+ DNS operational commands
+
+Package: vyatta-op-service-dns-routing-instance-v1-yang
+Architecture: all
+Depends: vci-service-dns, ${misc:Depends}, ${yang:Depends}
+Description: vyatta-op-service-dns-routing-instance-v1 module
+ The YANG module for vyatta-op-service-dns-routing-instance-v1

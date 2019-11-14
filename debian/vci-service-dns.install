@@ -1,0 +1,6 @@
+debian/ddclient@.service lib/systemd/system
+debian/dnsmasq@.service lib/systemd/system
+scripts/dns-dynamic-op lib/vci-service-dns
+scripts/dns-forwarding-op lib/vci-service-dns
+scripts/list-dhcp-interfaces lib/vci-service-dns
+usr/bin/vci-service-dns lib/vci-service-dns

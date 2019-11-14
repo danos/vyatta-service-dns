@@ -1,0 +1,2 @@
+share/vyatta-op/functions/tech-support.d/1660-vyatta-service-dns-routing-instance opt/vyatta/share/vyatta-op/functions/tech-support.d
+yang/vyatta-op-service-dns-routing-instance-v1.yang /usr/share/configd/yang

@@ -1,0 +1,4 @@
+#!/bin/bash
+local -a array ;
+array=( /var/lib/dhcp/eth* /var/lib/dhcp/br* /var/lib/dhcp/dp* ) ;
+echo  -n "${array[@]##*/}"

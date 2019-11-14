@@ -1,0 +1,221 @@
+#!/usr/bin/perl
+
+use warnings;
+use strict;
+
+use lib "/opt/vyatta/share/perl5";
+use Try::Tiny;
+use Getopt::Long;
+use Vyatta::Configd;
+use Readonly;
+use File::Basename;
+
+Readonly my $SCRIPT_NAME => basename($0);
+my $client = Vyatta::Configd::Client->new();
+
+my ($vrf);
+
+sub reset_cache {
+    try {
+        my $input = {};
+        $input = { "routing-instance" => $vrf }
+          unless $vrf eq "default";
+        $client->call_rpc_hash( "vyatta-service-dns-v1",
+            "reset-dns-forwarding-cache", $input );
+    }
+    catch {
+        my $msg = $_;
+        $msg =~ s/at.*$//;
+        die $msg;
+    }
+}
+
+sub reset_all {
+    try {
+        my $input = {};
+        $input = { "routing-instance" => $vrf }
+          unless $vrf eq "default";
+        $client->call_rpc_hash( "vyatta-service-dns-v1",
+            "reset-dns-forwarding", $input );
+    }
+    catch {
+        my $msg = $_;
+        $msg =~ s/at.*$//;
+        die $msg;
+    }
+}
+
+sub show_ns {
+    my $path = "service dns forwarding";
+    $path = "routing routing-instance $vrf service dns forwarding"
+      unless $vrf eq "default";
+
+    my $tree = try { $client->tree_get_full_hash($path); };
+    die "DNS Forwarding is not running\n"
+      unless defined $tree;
+
+    $tree = $tree->{"forwarding"};
+
+    my @inuse =
+      map { { "address" => $_->{"address"}, "via" => $_->{"provenance"} } }
+      grep { $_->{"in-use"} and not $_->{"domain-override-only"} }
+      @{ $tree->{"state"}->{"nameservers"} };
+
+    my @notinuse =
+      map { { "address" => $_->{"address"}, "via" => $_->{"provenance"} } }
+      grep { not $_->{"in-use"} } @{ $tree->{"state"}->{"nameservers"} };
+
+    my @domain_overrides =
+      map { { "address" => $_->{"address"}, "domains" => $_->{"domains"} } }
+      grep { defined $_->{"domains"} } @{ $tree->{"state"}->{"nameservers"} };
+
+    die "No DNS servers available for forwarding\n"
+      if scalar(@inuse) == 0 and scalar(@domain_overrides) == 0;
+
+    sub print_inuse {
+        my @inuse = @_;
+        printf "-----------------------------------------------\n";
+        printf "   Nameservers configured for DNS forwarding   \n";
+        printf "-----------------------------------------------\n";
+        for my $server (@inuse) {
+            printf "%s available via '%s'\n", $server->{"address"},
+              $server->{"via"};
+        }
+        printf "\n";
+    }
+
+    sub print_notinuse {
+        my @notinuse = @_;
+        printf "-----------------------------------------------\n";
+        printf " Nameservers NOT configured for DNS forwarding \n";
+        printf "-----------------------------------------------\n";
+        for my $server (@notinuse) {
+            printf "%s available via '%s'\n", $server->{"address"},
+              $server->{"via"};
+        }
+        printf "\n";
+    }
+
+    sub print_domain_override {
+        my @domain_overrides = @_;
+        printf "Domain Overrides:\n";
+        printf "\n";
+        for my $server (@domain_overrides) {
+            for my $domain ( @{ $server->{"domains"} } ) {
+                printf "%s uses %s\n", $domain, $server->{"address"};
+            }
+        }
+        printf "\n";
+    }
+
+    print_inuse @inuse unless scalar(@inuse) == 0;
+    print_domain_override @domain_overrides
+      unless scalar(@domain_overrides) == 0;
+    print_notinuse @notinuse unless scalar(@notinuse) == 0;
+}
+
+sub show_stats {
+    my $path = "service dns forwarding";
+    $path = "routing routing-instance $vrf service dns forwarding"
+      unless $vrf eq "default";
+
+    my $tree = try { $client->tree_get_full_hash($path); };
+    die "DNS Forwarding is not running\n"
+      unless defined $tree;
+
+    $tree = $tree->{"forwarding"};
+
+    my @inuse =
+      grep { $_->{"in-use"} and not $_->{"domain-override-only"} }
+      @{ $tree->{"state"}->{"nameservers"} };
+
+    my @domain_overrides =
+      grep { defined $_->{"domains"} } @{ $tree->{"state"}->{"nameservers"} };
+
+    my $query_stats = {
+        "answered"  => $tree->{"state"}->{"queries-answered"},
+        "forwarded" => $tree->{"state"}->{"queries-forwarded"},
+    };
+    my $cache_stats = $tree->{"state"}->{"cache"};
+
+    sub print_cache_stats {
+        my ( $cache_stats, $query_stats ) = @_;
+        printf "----------------\n";
+        printf "Cache statistics\n";
+        printf "----------------\n";
+        printf "Cache size: %s\n",               $cache_stats->{"size"};
+        printf "Queries forwarded: %s\n",        $query_stats->{"forwarded"};
+        printf "Queries answered locally: %s\n", $query_stats->{"answered"};
+        printf "Total DNS entries inserted into cache: %s\n",
+          $cache_stats->{"cache-entries"};
+        printf "DNS entries removed from cache before expiry: %s\n",
+          $cache_stats->{"reused-cache-entries"};
+        printf "\n";
+    }
+
+    sub print_nameserver_stats {
+        my @inuse = @_;
+        printf "---------------------\n";
+        printf "Nameserver statistics\n";
+        printf "---------------------\n";
+        for my $server (@inuse) {
+            printf "Server: %s\n",       $server->{"address"};
+            printf "Queries sent: %s\n", $server->{"queries-sent"};
+            printf "Queries retried or failed: %s\n",
+              $server->{"queries-retried-or-failed"};
+            printf "\n";
+        }
+        printf "\n";
+    }
+
+    sub print_domain_override_stats {
+        my @domain_overrides = @_;
+        printf "Domain Override Servers\n";
+        printf "\n";
+        for my $server (@domain_overrides) {
+            printf "Server: %s\n",       $server->{"address"};
+            printf "Queries sent: %s\n", $server->{"queries-sent"};
+            printf "Queries retried or failed: %s\n",
+              $server->{"queries-retried-or-failed"};
+            printf "\n";
+        }
+        printf "\n";
+    }
+
+    print_cache_stats $cache_stats, $query_stats;
+    print_nameserver_stats @inuse unless scalar(@inuse) == 0;
+    print_domain_override_stats @domain_overrides
+      unless scalar(@domain_overrides) == 0;
+}
+
+sub call_action_by_name {
+    my ( $actions, $script_name, $opt_name, $usage ) = @_;
+
+    my $usagefn = sub {
+        printf( "Usage for %s %s:\n", $script_name, $usage );
+        printf( "    %s %s --%s=[%s]\n",
+            $script_name, $usage, $opt_name, join( "|", keys( %{$actions} ) ) );
+        exit(1);
+    };
+
+    my ($name);
+    GetOptions(
+        "$opt_name=s" => \$name,
+        "vrf=s"       => \$vrf,
+    ) or $usagefn->();
+    $usagefn->() unless ( defined($name) );
+    $vrf = "default" unless defined $vrf;
+
+    my $action = $actions->{$name};
+    $usagefn->() unless ( defined($action) );
+
+    return $action->();
+}
+
+my %actions = (
+    "reset-cache" => \&reset_cache,
+    "reset-all"   => \&reset_all,
+    "show-ns"     => \&show_ns,
+    "show-stats"  => \&show_stats,
+);
+call_action_by_name( \%actions, $SCRIPT_NAME, "action", "" );

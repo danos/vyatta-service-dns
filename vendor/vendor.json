@@ -1,0 +1,13 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "J8ZqIW9akiyycl387Hasp7+fhiU=",
+			"path": "github.com/msoap/byline",
+			"revision": "7d8f3c6f9ac4e522432795b3f00f2ab404ecd962",
+			"revisionTime": "2018-05-19T21:29:19Z"
+		}
+	],
+	"rootPath": "eng.vyatta.net/components/service/dns"
+}

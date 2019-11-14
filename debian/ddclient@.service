@@ -1,0 +1,15 @@
+[Unit]
+Description=ddclient - a Perl client for updating DynDNS information
+
+[Service]
+Type=forking
+Environment=TERM=linux
+EnvironmentFile=/run/dns/%i/ddclient.env
+PIDFile=/run/ddclient/ddclient_%i.pid
+ExecStart=/usr/sbin/chvrf $DDCLIENT_VRF_NAME /usr/sbin/ddclient -file $DDCLIENT_IF_CONF
+
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target
+

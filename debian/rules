@@ -1,0 +1,27 @@
+#!/usr/bin/make -f
+#
+# This debian/rules uses debhelper.
+#
+
+export DEB_BUILD_HARDENING=1
+# Uncomment this for verbose logging
+#export DH_VERBOSE=1
+export DH_GOPKG := github.com/danos/vci-service-dns
+
+%:
+	 dh $@ --buildsystem=golang --with=golang,vci,yang,systemd
+
+override_dh_auto_build: vet
+	dh_auto_build
+
+# We do not vet vendor code
+vet:
+	if go doc cmd/vet >/dev/null 2>&1; then \
+		go tool vet $$(find . -type f -name \*.go | grep -v "/vendor/"); \
+	fi
+
+override_dh_systemd_enable:
+	dh_systemd_enable --name=dnsmasq,ddclient --no-enable
+
+override_dh_systemd_start:
+	dh_systemd_start --no-start debian/dnsmasq@.service debian/ddclient@.service
