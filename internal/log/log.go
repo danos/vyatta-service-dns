@@ -28,18 +28,18 @@ func init() {
 	Elog, err = syslog.NewLogger(syslog.LOG_ERR, 0)
 	if err != nil {
 		Elog = log.New(os.Stderr, "ERROR: ", 0)
-		Dlog.Println(err)
+		Elog.Println(err)
 	}
 
 	Ilog, err = syslog.NewLogger(syslog.LOG_INFO, 0)
 	if err != nil {
 		Ilog = log.New(os.Stdout, "INFO: ", 0)
-		Dlog.Println(err)
+		Ilog.Println(err)
 	}
 
 	Wlog, err = syslog.NewLogger(syslog.LOG_WARNING, 0)
 	if err != nil {
 		Wlog = log.New(os.Stderr, "WARNING: ", 0)
-		Dlog.Println(err)
+		Wlog.Println(err)
 	}
 }
