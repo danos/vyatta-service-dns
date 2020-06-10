@@ -549,7 +549,10 @@ func TestConfigObjectSetWithDHCPNameservers(t *testing.T) {
 new_domain_name_servers=1.1.1.1
 new_domain_name_servers=2.2.2.2
 `
-	ioutil.WriteFile("tmp/dhclient_eth0_lease", []byte(dhcpData), 0644)
+	err = ioutil.WriteFile("tmp/dhclient_eth0_lease", []byte(dhcpData), 0644)
+	if err != nil {
+		t.Fatal(err)
+	}
 	select {
 	case act := <-proc.actions:
 		if act != "reload" {

@@ -5,7 +5,6 @@ package forwarding
 import (
 	"io"
 	"os"
-	"path/filepath"
 	"regexp"
 	"text/template"
 
@@ -83,7 +82,6 @@ func startSystemWatcher(proc process.Process, confFile, watchFile string) *syste
 	out.watcher = fswatcher.Start(
 		fswatcher.LogPrefix("system nameserver watcher:"),
 		fswatcher.Logger(log.Dlog),
-		fswatcher.Handler(filepath.Dir(watchFile), nil),
 		fswatcher.Handler(watchFile, out),
 	)
 	return out
@@ -117,11 +115,10 @@ func (w *systemWatcher) createOrWrite(name string) error {
 	return w.proc.Reload()
 }
 
-func (w *systemWatcher) Write(name string) error {
-	return w.createOrWrite(name)
-}
-
-func (w *systemWatcher) Create(name string) error {
+func (w *systemWatcher) CloseWrite(name string) error {
+	if name != w.watchFile {
+		return nil
+	}
 	return w.createOrWrite(name)
 }
 

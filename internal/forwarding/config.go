@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"reflect"
 	"strings"
 	"sync/atomic"
@@ -448,17 +447,15 @@ func startReloadWatcher(
 	out.watcher = fswatcher.Start(
 		fswatcher.LogPrefix("resolv watcher:"),
 		fswatcher.Logger(log.Dlog),
-		fswatcher.Handler(filepath.Dir(file), nil),
 		fswatcher.Handler(file, out),
 	)
 	return out
 }
 
-func (w *reloadWatcher) Write(name string) error {
-	return w.proc.Reload()
-}
-
-func (w *reloadWatcher) Create(name string) error {
+func (w *reloadWatcher) CloseWrite(name string) error {
+	if name != w.file {
+		return nil
+	}
 	return w.proc.Reload()
 }
 

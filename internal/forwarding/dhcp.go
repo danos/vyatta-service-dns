@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"regexp"
 	"strings"
 	"text/template"
@@ -93,7 +92,6 @@ func startDhcpWatcher(
 		file := fmt.Sprintf(watchPattern, intf)
 		out.fileToIntf[file] = intf
 		opts = append(opts,
-			fswatcher.Handler(filepath.Dir(file), nil),
 			fswatcher.Handler(file, out),
 		)
 	}
@@ -139,11 +137,11 @@ func (w *dhcpWatcher) createOrWrite(name string) error {
 	return w.proc.Reload()
 }
 
-func (w *dhcpWatcher) Write(name string) error {
-	return w.createOrWrite(name)
-}
-
-func (w *dhcpWatcher) Create(name string) error {
+func (w *dhcpWatcher) CloseWrite(name string) error {
+	_, ok := w.fileToIntf[name]
+	if !ok {
+		return nil
+	}
 	return w.createOrWrite(name)
 }
 

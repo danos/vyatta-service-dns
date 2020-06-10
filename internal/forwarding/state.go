@@ -128,7 +128,6 @@ func (s *State) prepareWatcher() *fsnotify.Watcher {
 	}
 
 	watcher.Add(filepath.Dir(s.statefile))
-	watcher.Add(s.statefile)
 	return watcher
 }
 
@@ -139,9 +138,10 @@ func (s *State) waitForState(watcher *fsnotify.Watcher) bool {
 		select {
 		case event := <-watcher.Events:
 			switch {
-			case event.Op&fsnotify.Write == fsnotify.Write:
-				return true
-			case event.Op&fsnotify.Create == fsnotify.Create:
+			case event.Op&fsnotify.CloseWrite == fsnotify.CloseWrite:
+				if event.Name != s.statefile {
+					continue
+				}
 				return true
 			}
 		case err := <-watcher.Errors:
