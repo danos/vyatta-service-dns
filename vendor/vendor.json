@@ -3,11 +3,17 @@
 	"ignore": "test",
 	"package": [
 		{
+			"checksumSHA1": "YImPVNZRCKOaaReWnFEH+AaP8NM=",
+			"path": "github.com/fsnotify/fsnotify",
+			"revision": "1485a34d5d5723fea214f5710708e19a831720e4",
+			"revisionTime": "2019-03-12T18:14:46Z"
+		},
+		{
 			"checksumSHA1": "J8ZqIW9akiyycl387Hasp7+fhiU=",
 			"path": "github.com/msoap/byline",
 			"revision": "7d8f3c6f9ac4e522432795b3f00f2ab404ecd962",
 			"revisionTime": "2018-05-19T21:29:19Z"
 		}
 	],
-	"rootPath": "eng.vyatta.net/components/service/dns"
+	"rootPath": "github.com/danos/vyatta-service-dns"
 }
