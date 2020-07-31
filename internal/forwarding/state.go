@@ -138,7 +138,7 @@ func (s *State) waitForState(watcher *fsnotify.Watcher) bool {
 		select {
 		case event := <-watcher.Events:
 			switch {
-			case event.Op&fsnotify.CloseWrite == fsnotify.CloseWrite:
+			case event.Op&(fsnotify.CloseWrite|fsnotify.Write) != 0:
 				if event.Name != s.statefile {
 					continue
 				}
