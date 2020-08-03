@@ -1,3 +1,15 @@
+vyatta-service-dns (1.10) unstable; urgency=medium
+
+  [ Daniel Gollub ]
+  * log: use dedicated loglevel syslog instances
+
+  [ John Southworth ]
+  * Fork github.com/fsnotify/fsnotify locally
+  * Add support for IN_CLOSE_WRITE to forked fsnotify
+  * Cleanup filesystem notifications and eliminate races
+
+ -- Nicholas Brown <nick.brown@att.com>  Mon, 03 Aug 2020 15:11:38 +0100
+
 vyatta-service-dns (1.9) unstable; urgency=medium
 
   * DANOS Import Master
