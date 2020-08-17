@@ -1,3 +1,10 @@
+vyatta-service-dns (1.11) unstable; urgency=medium
+
+  [ Nachiketa Prachanda ]
+  * state: watch for write events on the dnsmasq.log
+
+ -- Nicholas Brown <nick.brown@att.com>  Mon, 17 Aug 2020 10:41:30 +0100
+
 vyatta-service-dns (1.10) unstable; urgency=medium
 
   [ Daniel Gollub ]
