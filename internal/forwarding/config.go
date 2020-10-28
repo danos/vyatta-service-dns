@@ -346,7 +346,7 @@ func (c *Config) updateConfiguration(conf *ConfigData) error {
 
 	c.systemConfig.Set(conf.System)
 
-	err = c.forwardingProcess.Reload()
+	err = c.forwardingProcess.Restart()
 	if err != nil {
 		return err
 	}

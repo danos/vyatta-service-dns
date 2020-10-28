@@ -112,7 +112,7 @@ func (w *systemWatcher) createOrWrite(name string) error {
 	if err != nil {
 		return err
 	}
-	return w.proc.Reload()
+	return w.proc.Restart()
 }
 
 func (w *systemWatcher) CloseWrite(name string) error {

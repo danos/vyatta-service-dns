@@ -131,13 +131,13 @@ func (p *tproc) Stop() error {
 	p.actions <- "stop"
 	return nil
 }
-func (p *tproc) Reload() error {
+func (p *tproc) Restart() error {
 	buf, err := ioutil.ReadFile(p.confFile)
 	p.conf = string(buf)
-	p.actions <- "reload"
+	p.actions <- "Restart"
 	return err
 }
-func (p *tproc) Restart() error {
+func (p *tproc) Reload() error {
 	return nil
 }
 func (p *tproc) Signal(signal syscall.Signal) error {
@@ -219,11 +219,11 @@ func TestConfigObjectSet(t *testing.T) {
 	// Wait for the process to get signaled
 	select {
 	case act := <-proc.actions:
-		if act != "reload" {
-			t.Fatalf("reload expected, got %s", act)
+		if act != "Restart" {
+			t.Fatalf("Restart expected, got %s", act)
 		}
 	case <-time.After(testTimeout):
-		t.Fatal("timeout waiting for reload signal")
+		t.Fatal("timeout waiting for Restart signal")
 	}
 
 	// Verify the config files that should have been written
@@ -281,7 +281,7 @@ DNSMASQ_CONF=tmp/dnsmasq.conf
 			t.Fatalf("stop expected, got %s", act)
 		}
 	case <-time.After(testTimeout):
-		t.Fatal("timeout waiting for reload signal")
+		t.Fatal("timeout waiting for Restart signal")
 	}
 
 	// Verify the files that should have been removed are removed
@@ -332,11 +332,11 @@ func TestConfigObjectGet(t *testing.T) {
 	// Wait for the process to get signaled
 	select {
 	case act := <-proc.actions:
-		if act != "reload" {
-			t.Fatalf("reload expected, got %s", act)
+		if act != "Restart" {
+			t.Fatalf("Restart expected, got %s", act)
 		}
 	case <-time.After(testTimeout):
-		t.Fatal("timeout waiting for reload signal")
+		t.Fatal("timeout waiting for Restart signal")
 	}
 
 	got := conf.Get()
@@ -383,11 +383,11 @@ func TestStateObjectGet(t *testing.T) {
 
 	select {
 	case act := <-proc.actions:
-		if act != "reload" {
-			t.Fatalf("reload expected, got %s", act)
+		if act != "Restart" {
+			t.Fatalf("Restart expected, got %s", act)
 		}
 	case <-time.After(testTimeout):
-		t.Fatal("timeout waiting for reload signal")
+		t.Fatal("timeout waiting for Restart signal")
 	}
 
 	state := NewState(conf)
@@ -473,11 +473,11 @@ func TestConfigObjectSetWithSystemNameservers(t *testing.T) {
 	// Wait for the process to get signaled
 	select {
 	case act := <-proc.actions:
-		if act != "reload" {
-			t.Fatalf("reload expected, got %s", act)
+		if act != "Restart" {
+			t.Fatalf("Restart expected, got %s", act)
 		}
 	case <-time.After(testTimeout):
-		t.Fatal("timeout waiting for reload signal 1")
+		t.Fatal("timeout waiting for Restart signal 1")
 	}
 
 	const resolvData = `
@@ -487,11 +487,11 @@ nameserver 2.2.2.2
 	ioutil.WriteFile("tmp/resolv.conf", []byte(resolvData), 0644)
 	select {
 	case act := <-proc.actions:
-		if act != "reload" {
-			t.Fatalf("reload expected, got %s", act)
+		if act != "Restart" {
+			t.Fatalf("Restart expected, got %s", act)
 		}
 	case <-time.After(testTimeout):
-		t.Fatal("timeout waiting for reload signal 2")
+		t.Fatal("timeout waiting for Restart signal 2")
 	}
 
 	_, err = os.Stat("tmp/system.conf")
@@ -539,11 +539,11 @@ func TestConfigObjectSetWithDHCPNameservers(t *testing.T) {
 	// Wait for the process to get signaled
 	select {
 	case act := <-proc.actions:
-		if act != "reload" {
-			t.Fatalf("reload expected, got %s", act)
+		if act != "Restart" {
+			t.Fatalf("Restart expected, got %s", act)
 		}
 	case <-time.After(testTimeout):
-		t.Fatal("timeout waiting for reload signal 1")
+		t.Fatal("timeout waiting for Restart signal 1")
 	}
 	const dhcpData = `
 new_domain_name_servers=1.1.1.1
@@ -555,11 +555,11 @@ new_domain_name_servers=2.2.2.2
 	}
 	select {
 	case act := <-proc.actions:
-		if act != "reload" {
-			t.Fatalf("reload expected, got %s", act)
+		if act != "Restart" {
+			t.Fatalf("Restart expected, got %s", act)
 		}
 	case <-time.After(testTimeout):
-		t.Fatal("timeout waiting for reload signal 2")
+		t.Fatal("timeout waiting for Restart signal 2")
 	}
 
 	_, err = os.Stat("tmp/dhcpinterface-eth0.conf")
