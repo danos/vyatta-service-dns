@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/danos/vci-service-dns/internal/log"
+	"github.com/danos/vyatta-service-dns/internal/log"
 	"github.com/msoap/byline"
 )
 

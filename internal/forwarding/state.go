@@ -17,8 +17,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/danos/vci-service-dns/internal/log"
-	"github.com/danos/vci-service-dns/internal/process"
+	"github.com/danos/vyatta-service-dns/internal/log"
+	"github.com/danos/vyatta-service-dns/internal/process"
 	"github.com/fsnotify/fsnotify"
 	"github.com/msoap/byline"
 )

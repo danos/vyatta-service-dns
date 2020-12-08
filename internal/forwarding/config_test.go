@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/danos/vci-service-dns/internal/process"
+	"github.com/danos/vyatta-service-dns/internal/process"
 )
 
 // This is a long timeout to account for slow build workers.

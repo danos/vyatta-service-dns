@@ -8,9 +8,9 @@ import (
 	"regexp"
 	"text/template"
 
-	"github.com/danos/vci-service-dns/internal/fswatcher"
-	"github.com/danos/vci-service-dns/internal/log"
-	"github.com/danos/vci-service-dns/internal/process"
+	"github.com/danos/vyatta-service-dns/internal/fswatcher"
+	"github.com/danos/vyatta-service-dns/internal/log"
+	"github.com/danos/vyatta-service-dns/internal/process"
 	"github.com/msoap/byline"
 )
 

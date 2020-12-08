@@ -8,7 +8,7 @@ import (
 	"os/exec"
 
 	"github.com/danos/vci"
-	"github.com/danos/vci-service-dns"
+	dns "github.com/danos/vyatta-service-dns"
 	"github.com/msoap/byline"
 )
 

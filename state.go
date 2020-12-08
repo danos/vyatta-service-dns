@@ -3,8 +3,8 @@
 package dns
 
 import (
-	"github.com/danos/vci-service-dns/internal/dynamic"
-	"github.com/danos/vci-service-dns/internal/forwarding"
+	"github.com/danos/vyatta-service-dns/internal/dynamic"
+	"github.com/danos/vyatta-service-dns/internal/forwarding"
 )
 
 type StateData struct {

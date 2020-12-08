@@ -7,11 +7,11 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/danos/vci-service-dns/internal/dynamic"
-	"github.com/danos/vci-service-dns/internal/forwarding"
-	"github.com/danos/vci-service-dns/internal/log"
-	"github.com/danos/vci-service-dns/internal/process"
 	"github.com/danos/encoding/rfc7951"
+	"github.com/danos/vyatta-service-dns/internal/dynamic"
+	"github.com/danos/vyatta-service-dns/internal/forwarding"
+	"github.com/danos/vyatta-service-dns/internal/log"
+	"github.com/danos/vyatta-service-dns/internal/process"
 )
 
 type ConfigData struct {

@@ -6,7 +6,7 @@
 export DEB_BUILD_HARDENING=1
 # Uncomment this for verbose logging
 #export DH_VERBOSE=1
-export DH_GOPKG := github.com/danos/vci-service-dns
+export DH_GOPKG := github.com/danos/vyatta-service-dns
 
 %:
 	 dh $@ --buildsystem=golang --with=golang,vci,yang,systemd

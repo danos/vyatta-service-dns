@@ -5,7 +5,7 @@ package dynamic
 import (
 	"fmt"
 
-	"github.com/danos/vci-service-dns/internal/process"
+	"github.com/danos/vyatta-service-dns/internal/process"
 )
 
 func UpdateDynamicDnsInterface(intf string) (struct{}, error) {
