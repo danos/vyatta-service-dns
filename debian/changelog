@@ -1,3 +1,10 @@
+vyatta-service-dns (0.13) unstable; urgency=medium
+
+  [ John Southworth ]
+  * Fix go import paths
+
+ -- Nachiketa Prachanda <nprachan@vyatta.att-mail.com>  Tue, 23 Feb 2021 13:36:24 -0800
+
 vyatta-service-dns (1.12) unstable; urgency=medium
 
   [ John Southworth ]
