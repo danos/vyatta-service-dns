@@ -1,4 +1,4 @@
-vyatta-service-dns (0.13) unstable; urgency=medium
+vyatta-service-dns (1.13) unstable; urgency=medium
 
   [ John Southworth ]
   * Fix go import paths
