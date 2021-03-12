@@ -13,6 +13,7 @@ Build-Depends:
  golang-github-danos-mgmterror-dev,
  golang-github-danos-encoding-rfc7951-dev,
  golang-github-danos-vci-dev,
+ golang-golang-x-sys-dev,
 Standards-Version: 3.9.6
 
 Package: vci-service-dns
